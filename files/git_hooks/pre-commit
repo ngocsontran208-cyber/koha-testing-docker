@@ -70,7 +70,7 @@ for my $l ( split '\n', `git diff-index -p -M --cached HEAD` ) {
 }
 
 if ($nb_errors) {
-    abording();
+    aborting();
 } elsif ( $tidy_commands ) {
     say colored( "Tidying...", "yellow" );
 
@@ -173,9 +173,9 @@ sub tidy_cmd {
     return build_cmd($cmd);
 }
 
-sub abording {
+sub aborting {
     say "";
-    say colored( "Abording commit, encountered errors", "red" );
+    say colored( "Aborting commit, encountered errors", "red" );
     say "Are you sure you want to commit?";
     say "You can commit with the --no-verify argument";
     exit 1;
