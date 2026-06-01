@@ -158,23 +158,23 @@ jammy-manifest:
     - jammy-amd64
     - jammy-arm64
 
-plucky-amd64:
+resolute-amd64:
   extends: .build-amd64
   variables:
-    CI_JOB_NAME: plucky
+    CI_JOB_NAME: resolute
 
-plucky-arm64:
+resolute-arm64:
   extends: .build-arm64
   variables:
-    CI_JOB_NAME: plucky
+    CI_JOB_NAME: resolute
 
-plucky-manifest:
+resolute-manifest:
   extends: .create-manifest
   variables:
-    CI_JOB_NAME: plucky
+    CI_JOB_NAME: resolute
   needs:
-    - plucky-amd64
-    - plucky-arm64
+    - resolute-amd64
+    - resolute-arm64
 
 ## Restore once we remove Cypress
 # sid-amd64:

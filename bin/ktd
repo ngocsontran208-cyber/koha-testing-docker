@@ -301,7 +301,7 @@ while [ $# -gt 0 ]; do
                     echo "MariaDB version mapping (when DB_IMAGE not set):"
                     echo "  Debian 13 (trixie)                 → mariadb:11.8"
                     echo "  Debian 12 (bookworm)               → mariadb:10.11"
-                    echo "  Ubuntu 26.04 (plucky)              → mariadb:11.8"
+                    echo "  Ubuntu 26.04 (resolute)              → mariadb:11.8"
                     echo "  Ubuntu 24.04 (noble)               → mariadb:10.11"
                     echo "  Ubuntu 22.04 (jammy)               → mariadb:10.6"
                     echo ""
@@ -454,7 +454,7 @@ if [ -z "$DB_IMAGE" ] && [ "$ENABLED_DB_ENGINE" = "mariadb" ]; then
         *-noble*|*-u24*)
             DB_IMAGE="mariadb:10.11"
             ;;
-        *-plucky*|*-u26*)
+        *-resolute*|*-u26*)
             DB_IMAGE="mariadb:11.8"
             ;;
         *-jammy*|*-u22*)
