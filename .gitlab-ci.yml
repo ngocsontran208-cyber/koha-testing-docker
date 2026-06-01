@@ -12,7 +12,7 @@ variables:
   DOCKER_DRIVER: overlay2
   FF_NETWORK_PER_BUILD: 1
   # Change this to make a different distro the default branch tag
-  DEFAULT_DISTRO: bookworm
+  DEFAULT_DISTRO: trixie
 
 before_script:
   - echo "$GITLAB_REGISTRY_TOKEN" | docker login -u "$GITLAB_REGISTRY_USER" --password-stdin $CI_REGISTRY
@@ -122,24 +122,6 @@ bookworm-manifest:
     - bookworm-amd64
     - bookworm-arm64
 
-bullseye-amd64:
-  extends: .build-amd64
-  variables:
-    CI_JOB_NAME: bullseye
-
-bullseye-arm64:
-  extends: .build-arm64
-  variables:
-    CI_JOB_NAME: bullseye
-
-bullseye-manifest:
-  extends: .create-manifest
-  variables:
-    CI_JOB_NAME: bullseye
-  needs:
-    - bullseye-amd64
-    - bullseye-arm64
-
 noble-amd64:
   extends: .build-amd64
   variables:
@@ -176,23 +158,23 @@ jammy-manifest:
     - jammy-amd64
     - jammy-arm64
 
-focal-amd64:
+plucky-amd64:
   extends: .build-amd64
   variables:
-    CI_JOB_NAME: focal
+    CI_JOB_NAME: plucky
 
-focal-arm64:
+plucky-arm64:
   extends: .build-arm64
   variables:
-    CI_JOB_NAME: focal
+    CI_JOB_NAME: plucky
 
-focal-manifest:
+plucky-manifest:
   extends: .create-manifest
   variables:
-    CI_JOB_NAME: focal
+    CI_JOB_NAME: plucky
   needs:
-    - focal-amd64
-    - focal-arm64
+    - plucky-amd64
+    - plucky-arm64
 
 ## Restore once we remove Cypress
 # sid-amd64:

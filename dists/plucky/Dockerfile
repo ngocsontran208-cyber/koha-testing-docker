@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM ubuntu:26.04
 
 # File Author / Maintainer
 LABEL maintainer="tomascohen@theke.io"
