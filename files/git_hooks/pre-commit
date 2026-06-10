@@ -117,9 +117,19 @@ exit 0;
 
 sub guess_container_name {
     my @names = map { chomp; $_ } qx{docker ps --format '{{.Names}}'|grep '\\-koha-1'};
-    my $default = 'kohadev-koha-1';
-    return $default if grep {$_ eq $default} @names;
-    return $names[0];
+
+    # Pick the koha container that bind-mounts the tree we're committing from,
+    # so the correct instance is used when several ktd instances run at once
+    my $repo = qx{git rev-parse --show-toplevel};
+    chomp $repo;
+    for my $name (@names) {
+        my $mount = qx{docker inspect --format '{{range .Mounts}}{{if eq .Destination "/kohadevbox/koha"}}{{.Source}}{{end}}{{end}}' $name 2>/dev/null};
+        chomp $mount;
+        return $name if $mount eq $repo;
+    }
+
+    # No running ktd instance mounts this tree
+    return undef;
 }
 
 sub intersect{
@@ -136,6 +146,11 @@ sub build_cmd {
     $cmd =~ s|"|\\"|g;
     $cmd =~ s|\$|\\\$|g;
     my $container_name = guess_container_name();
+    unless ($container_name) {
+        say colored( "No running ktd container mounts this tree, cannot run pre-commit checks", "red" );
+        say "Start the ktd instance for this koha git repo, or commit with --no-verify";
+        exit 1;
+    }
     return sprintf q{docker exec --user kohadev-koha -w /kohadevbox/koha %s /bin/bash -c "source ~/.bashrc; %s"}, $container_name, $cmd;
 }
 sub perl_valid_cmd {
