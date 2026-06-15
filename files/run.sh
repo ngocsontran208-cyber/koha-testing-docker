@@ -280,8 +280,18 @@ if [ "${GIT_WORKTREE_SOURCE}" != "" ]; then
 fi
 
 if [ "${GIT_WORKTREE_SOURCE}" != "" ]; then
-    # Skip for worktrees
-    echo "    [!] Skipping hooks setup"
+    echo "    [*] Installing and setting hooks for worktree (${GIT_BASE_DIR})"
+    # In a worktree the working tree's '.git' is a file, our hooksPath ( which
+    # is relative to the actual kohaclone ) fails silently.
+    # KTD mounts the main clone at the same absolute path inside the container,
+    # so an absolute hooksPath into the shared hooks dir resolves both on the host
+    # and in the container.
+    sudo koha-shell ${KOHA_INSTANCE} -c "\
+        mkdir -p ${GIT_BASE_DIR}/.git/hooks/ktd ; \
+        cp ${BUILD_DIR}/git_hooks/* ${GIT_BASE_DIR}/.git/hooks/ktd ; \
+        cd ${BUILD_DIR}/koha ; \
+        git config extensions.worktreeConfig true ; \
+        git config --worktree core.hooksPath ${GIT_BASE_DIR}/.git/hooks/ktd"
 else
     echo "    [*] Installing and setting hooks (${GIT_BASE_DIR})"
     sudo koha-shell ${KOHA_INSTANCE} -c "\
