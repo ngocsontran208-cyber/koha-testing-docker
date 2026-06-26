@@ -48,6 +48,7 @@ Options:
     --mana-url 'url'      Sets the mana-url
     --smtp                Use a SMTP container
     --sso                 Use a Keycloak container
+    --debug               Expose port 5001 for Perl DAP debugging
     --shell               Get into the Koha container
     --dbshell             Get into the database
     --run 'command'       Execute a command inside the shell (requires --shell)
@@ -219,6 +220,7 @@ ENABLE_SELENIUM="no"
 ENABLE_MANA="no"
 ENABLE_SMTP="no"
 ENABLE_SSO="no"
+ENABLE_DEBUG="no"
 ENABLE_LOCAL_RUN_SCRIPT="no"
 ENABLE_BUILD_IMAGE="no"
 PERSISTENT_DB="no"
@@ -358,6 +360,9 @@ while [ $# -gt 0 ]; do
             shift ;;
         --sso)
             ENABLE_SSO="yes"
+            shift ;;
+        --debug)
+            ENABLE_DEBUG="yes"
             shift ;;
         --root)
             ROOT_ACCESS="yes"
@@ -645,6 +650,25 @@ else
 
             if [ "$ENABLE_SSO" != "no" ]; then
                 COMPOSE_OPTIONS="${COMPOSE_OPTIONS} -f compose/sso.yml"
+            fi
+
+            if [ "$ENABLE_DEBUG" != "no" ]; then
+                # Generate .vscode config if it doesn't exist
+                if [ ! -f "${SYNC_REPO}/.vscode/launch.json" ]; then
+                    mkdir -p "${SYNC_REPO}/.vscode"
+                    sed "s|__CONTAINER_NAME__|${PROJECT_NAME}-koha-1|g; s|__SYNC_REPO__|${SYNC_REPO}|g" \
+                        "${KTD_HOME}/files/templates/vscode_launch.json" > "${SYNC_REPO}/.vscode/launch.json"
+                    sed "s|__CONTAINER_NAME__|${PROJECT_NAME}-koha-1|g" \
+                        "${KTD_HOME}/files/templates/vscode_tasks.json" > "${SYNC_REPO}/.vscode/tasks.json"
+                    sed "s|__CONTAINER_NAME__|${PROJECT_NAME}-koha-1|g; s|__SYNC_REPO__|${SYNC_REPO}|g" \
+                        "${KTD_HOME}/files/templates/vscode_settings.json" > "${SYNC_REPO}/.vscode/settings.json"
+                    printf "  [debug] Created %s/.vscode/{launch,tasks,settings}.json\n" "${SYNC_REPO}"
+                elif ! grep -q "\"${PROJECT_NAME}-koha-1\"" "${SYNC_REPO}/.vscode/launch.json"; then
+                    printf "\nError: %s/.vscode/launch.json exists but targets a different container.\n" "${SYNC_REPO}"
+                    printf "Expected container: %s-koha-1\n" "${PROJECT_NAME}"
+                    printf "Remove the file or update containerName, then retry.\n\n"
+                    exit 1
+                fi
             fi
 
             if [ "$PERSISTENT_DB" != "no" ]; then
