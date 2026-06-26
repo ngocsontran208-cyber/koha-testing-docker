@@ -45,6 +45,7 @@ common:
     - libdevel-cover-report-clover-perl
     - libwebservice-ils-perl
     - libselenium-remote-driver-perl
+    - libperl-languageserver-perl
 
   nodejs:
     - nodejs
@@ -67,6 +68,9 @@ common:
     - xvfb
 
   temp: []
+
+  cpan:
+    - Twiggy
 
 distro_specific:
   # Older distros that still use legacy package names
