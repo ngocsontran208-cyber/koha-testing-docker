@@ -485,6 +485,14 @@ Using `-R /kohadevbox/koha` makes `plackup` watch everything in `/kohadevbox/koh
 
 You can also add `DEV_INSTALL` and `KOHA_HOME` to your `.env` file so you don't have to specify them here.
 
+### Debugging with VSCode
+
+KTD ships with built-in support for Perl debugging using VSCode and the DAP protocol.
+Set breakpoints, step through code, and inspect variables - both for tests and Plack
+(web requests through the browser).
+
+See [DEBUGGING.md](DEBUGGING.md) for the full setup guide.
+
 ### Using ktd to test and developp Mana
 
 You have to have a mana instance running first, using the `mana up` command (you may have to run it twice) from [the mana repo](https://gitlab.com/koha-community/koha-mana).
