@@ -6,8 +6,6 @@ environment inside Docker containers.
 It is built using the package install with the needed tweaks (including koha-gitify)
 in order to create such environment.
 
-The *docker-compose.yml* file is self explanatory.
-
 ## Requirements
 
 ### Software
