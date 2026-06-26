@@ -70,9 +70,16 @@ function reset_all(){
 alias reset_all_marc21='reset_all "marc21"';
 alias reset_all_unimarc='reset_all "unimarc"';
 
-alias start_plack_debug='sudo koha-plack --start \
-                                         --debugger \
-                                         --debugger-path "/kohadevbox/dbgp" \
-                                         --debugger-location "${REMOTE_DEBUGGER_LOCATION}" \
-                                         --debugger-key "${REMOTE_DEBUGGER_KEY}" \
-                                         ${KOHA_INSTANCE}'
+alias start_plack_debug='sudo koha-plack --stop ${KOHA_INSTANCE} 2>/dev/null; \
+                         rm -f /var/run/koha/${KOHA_INSTANCE}/plack.sock; \
+                         sudo -u ${KOHA_INSTANCE}-koha \
+                             KOHA_CONF=/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml \
+                             KOHA_HOME=/kohadevbox/koha \
+                             MOJO_HOME=/kohadevbox/koha \
+                             GIT_INSTALL=1 \
+                             PERL5LIB=/kohadevbox/koha:/kohadevbox/koha/lib \
+                             /usr/bin/plackup \
+                                 --server Twiggy \
+                                 --listen /var/run/koha/${KOHA_INSTANCE}/plack.sock \
+                                 -E development -M FindBin \
+                                 /etc/koha/sites/${KOHA_INSTANCE}/plack.psgi'

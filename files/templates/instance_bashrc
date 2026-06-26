@@ -1,9 +1,21 @@
 export PATH=${PATH}:/kohadevbox/bin:/kohadevbox/koha/node_modules/.bin/:/kohadevbox/node_modules/.bin/:${HOME}/.local/bin
 
-alias prove_debug='PERL5LIB="/kohadevbox/dbgp":$PERL5LIB \
-                   PERL5DB="BEGIN { require q(/kohadevbox/dbgp/perl5db.pl) }" \
-                   PERLDB_OPTS="RemotePort=${REMOTE_DEBUGGER_LOCATION} async=1 LogFile=/var/lib/koha/${KOHA_INSTANCE}/plack-debug.log" \
-                   perl -d'
+# Debug aliases — use with VSCode DAP (richterger.perl extension) or nvim-dap
+# VSCode launches processes via 'docker exec' using launch.json configurations.
+# These aliases provide a manual fallback for interactive perl debugger use.
+alias prove_debug='perl -d'
+
+alias plack_debug='sudo -u ${KOHA_INSTANCE}-koha \
+    KOHA_CONF=/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml \
+    KOHA_HOME=/kohadevbox/koha \
+    MOJO_HOME=/kohadevbox/koha \
+    GIT_INSTALL=1 \
+    PERL5LIB=/kohadevbox/koha:/kohadevbox/koha/lib \
+    /usr/bin/plackup \
+        --server Twiggy \
+        --listen /var/run/koha/${KOHA_INSTANCE}/plack.sock \
+        -E development -M FindBin \
+        /etc/koha/sites/${KOHA_INSTANCE}/plack.psgi'
 
 alias run_cypress='yarn cypress run --env KOHA_USER=${KOHA_USER},KOHA_PASS=${KOHA_PASS}'
 
