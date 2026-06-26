@@ -368,7 +368,9 @@ if [ "${ENABLE_PLUGINS}" = "yes" ]; then
     # replace the placeholder with the plugins entries
     sed -i "s# <!--pluginsdir>YOUR_PLUGIN_DIR_HERE</pluginsdir-->#$(echo "$PLUGINS_STRING")#" /etc/koha/sites/kohadev/koha-conf.xml
     # run the plugins installer
-    perl ${BUILD_DIR}/koha/misc/devel/install_plugins.pl
+    sudo koha-shell ${KOHA_INSTANCE} -c "\
+        cd ${BUILD_DIR}/koha ; \
+        perl misc/devel/install_plugins.pl && koha-plack --reload ${KOHA_INSTANCE}"
     echo "    [*] Plugins loaded!"
 fi
 
