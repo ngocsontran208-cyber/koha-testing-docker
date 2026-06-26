@@ -594,9 +594,9 @@ else
             cd "${KTD_HOME}"
 
             if [ "${USE_PROXY}" != "yes" ]; then
-                COMPOSE_OPTIONS='-f compose/base.yml'
+                COMPOSE_OPTIONS='-f compose/base.yml -f compose/local_ports.yml'
             else
-                COMPOSE_OPTIONS='-f compose/base-proxy.yml'
+                COMPOSE_OPTIONS='-f compose/base.yml -f compose/proxy.yml'
             fi
 
             for file in "${COMPOSE_FILES[@]}"; do

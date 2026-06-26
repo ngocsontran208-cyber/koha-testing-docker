@@ -1,0 +1,22 @@
+services:
+    koha:
+        networks:
+            proxy:
+                aliases:
+                    - "${KOHA_INTRANET_PREFIX}${KOHA_INSTANCE}${KOHA_INTRANET_SUFFIX}${KOHA_DOMAIN}"
+                    - "${KOHA_OPAC_PREFIX}${KOHA_INSTANCE}${KOHA_OPAC_SUFFIX}${KOHA_DOMAIN}"
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=proxy"
+            - "traefik.http.routers.${KOHA_INSTANCE}-intra.rule=Host(`${KOHA_INTRANET_PREFIX}${KOHA_INSTANCE}${KOHA_INTRANET_SUFFIX}${KOHA_DOMAIN}`) || Host(`${KOHA_INSTANCE}-intra.localhost`)"
+            - "traefik.http.routers.${KOHA_INSTANCE}-intra.entrypoints=web"
+            - "traefik.http.routers.${KOHA_INSTANCE}-intra.service=${KOHA_INSTANCE}-intra"
+            - "traefik.http.services.${KOHA_INSTANCE}-intra.loadbalancer.server.port=8081"
+            - "traefik.http.routers.${KOHA_INSTANCE}-opac.rule=Host(`${KOHA_OPAC_PREFIX}${KOHA_INSTANCE}${KOHA_OPAC_SUFFIX}${KOHA_DOMAIN}`) || Host(`${KOHA_INSTANCE}.localhost`)"
+            - "traefik.http.routers.${KOHA_INSTANCE}-opac.entrypoints=web"
+            - "traefik.http.routers.${KOHA_INSTANCE}-opac.service=${KOHA_INSTANCE}-opac"
+            - "traefik.http.services.${KOHA_INSTANCE}-opac.loadbalancer.server.port=8080"
+
+networks:
+    proxy:
+        external: true
