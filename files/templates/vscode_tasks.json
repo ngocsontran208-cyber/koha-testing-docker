@@ -1,0 +1,11 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "ktd-stop-plack",
+            "type": "shell",
+            "command": "docker exec __CONTAINER_NAME__ bash -c 'koha-plack --stop kohadev 2>/dev/null; rm -f /var/run/koha/kohadev/plack.sock; true'",
+            "problemMatcher": []
+        }
+    ]
+}

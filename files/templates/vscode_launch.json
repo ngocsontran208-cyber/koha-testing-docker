@@ -1,0 +1,79 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "KTD: Debug current test",
+            "type": "perl",
+            "request": "launch",
+            "program": "${fileDirname}/${fileBasename}",
+            "stopOnEntry": false,
+            "cwd": "/kohadevbox/koha",
+            "env": {
+                "KOHA_CONF": "/etc/koha/sites/kohadev/koha-conf.xml",
+                "PERL5LIB": "/kohadevbox/koha:/kohadevbox/koha/lib:/kohadevbox/qa-test-tools"
+            },
+            "reloadModules": true,
+            "containerCmd": "docker",
+            "containerName": "__CONTAINER_NAME__",
+            "pathMap": [
+                ["file:///kohadevbox/koha", "file:///__SYNC_REPO__"]
+            ]
+        },
+        {
+            "name": "KTD: Debug specific test",
+            "type": "perl",
+            "request": "launch",
+            "program": "${input:testFile}",
+            "stopOnEntry": false,
+            "cwd": "/kohadevbox/koha",
+            "env": {
+                "KOHA_CONF": "/etc/koha/sites/kohadev/koha-conf.xml",
+                "PERL5LIB": "/kohadevbox/koha:/kohadevbox/koha/lib:/kohadevbox/qa-test-tools"
+            },
+            "reloadModules": true,
+            "containerCmd": "docker",
+            "containerName": "__CONTAINER_NAME__",
+            "pathMap": [
+                ["file:///kohadevbox/koha", "file:///__SYNC_REPO__"]
+            ]
+        },
+        {
+            "name": "KTD: Plack (debug)",
+            "type": "perl",
+            "request": "launch",
+            "preLaunchTask": "ktd-stop-plack",
+            "program": "/usr/bin/plackup",
+            "args": [
+                "--server", "Twiggy",
+                "--listen", "/var/run/koha/kohadev/plack.sock",
+                "-E", "development",
+                "-M", "FindBin",
+                "/etc/koha/sites/kohadev/plack.psgi"
+            ],
+            "env": {
+                "KOHA_CONF": "/etc/koha/sites/kohadev/koha-conf.xml",
+                "KOHA_HOME": "/kohadevbox/koha",
+                "MOJO_HOME": "/kohadevbox/koha",
+                "PERL5LIB": "/kohadevbox/koha:/kohadevbox/koha/lib:/kohadevbox/koha/installer",
+                "PLACK_DEBUG": "1",
+                "GIT_INSTALL": "1"
+            },
+            "cwd": "/kohadevbox/koha",
+            "stopOnEntry": false,
+            "reloadModules": true,
+            "sudoUser": "kohadev-koha",
+            "containerCmd": "docker",
+            "containerName": "__CONTAINER_NAME__",
+            "pathMap": [
+                ["file:///kohadevbox/koha", "file:///__SYNC_REPO__"]
+            ]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "testFile",
+            "type": "promptString",
+            "description": "Path to test file inside container (e.g. t/db_dependent/Koha/Patron.t)"
+        }
+    ]
+}
