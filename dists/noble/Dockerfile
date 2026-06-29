@@ -7,6 +7,10 @@ ENV PATH=/usr/bin:/bin:/usr/sbin:/sbin
 ENV DEBIAN_FRONTEND=noninteractive
 ENV REFRESHED_AT=2025-09-19
 
+# Remove the default ubuntu user so the koha user will get UID 1000
+# Will avoid permission issues with bind-mounted Koha repository
+RUN userdel -r ubuntu 2>/dev/null || true
+
 # Copy package management scripts
 COPY files/install-packages /usr/local/bin/
 COPY files/package-config.yaml /usr/local/bin/
