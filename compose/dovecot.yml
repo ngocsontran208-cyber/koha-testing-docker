@@ -1,0 +1,17 @@
+services:
+    koha:
+        volumes:
+            - ./files/dovecot/test_xoauth2_email.pl:/kohadevbox/test_xoauth2_email.pl
+
+    dovecot:
+        image: dovecot/dovecot:latest
+
+        volumes:
+            - ./files/dovecot/config:/etc/dovecot/conf.d:ro
+
+        networks:
+            - kohanet
+
+        security_opt:
+            - no-new-privileges:true
+

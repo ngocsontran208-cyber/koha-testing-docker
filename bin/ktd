@@ -221,6 +221,7 @@ ENABLE_MANA="no"
 ENABLE_SMTP="no"
 ENABLE_SSO="no"
 ENABLE_DEBUG="no"
+ENABLE_DOVECOT="no"
 ENABLE_LOCAL_RUN_SCRIPT="no"
 ENABLE_BUILD_IMAGE="no"
 PERSISTENT_DB="no"
@@ -363,6 +364,9 @@ while [ $# -gt 0 ]; do
             shift ;;
         --debugger)
             ENABLE_DEBUG="yes"
+            shift ;;
+        --dovecot)
+            ENABLE_DOVECOT="yes"
             shift ;;
         --root)
             ROOT_ACCESS="yes"
@@ -669,6 +673,10 @@ else
                     printf "Remove the file or update containerName, then retry.\n\n"
                     exit 1
                 fi
+            fi
+
+            if [ "$ENABLE_DOVECOT" != "no" ]; then
+                COMPOSE_OPTIONS="${COMPOSE_OPTIONS} -f compose/dovecot.yml"
             fi
 
             if [ "$PERSISTENT_DB" != "no" ]; then
