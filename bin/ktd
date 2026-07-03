@@ -48,7 +48,7 @@ Options:
     --mana-url 'url'      Sets the mana-url
     --smtp                Use a SMTP container
     --sso                 Use a Keycloak container
-    --debug               Expose port 5001 for Perl DAP debugging
+    --debugger            Expose port 5001 for Perl DAP debugging
     --shell               Get into the Koha container
     --dbshell             Get into the database
     --run 'command'       Execute a command inside the shell (requires --shell)
@@ -361,7 +361,7 @@ while [ $# -gt 0 ]; do
         --sso)
             ENABLE_SSO="yes"
             shift ;;
-        --debug)
+        --debugger)
             ENABLE_DEBUG="yes"
             shift ;;
         --root)
