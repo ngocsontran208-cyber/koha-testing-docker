@@ -16,7 +16,7 @@
             "containerCmd": "docker",
             "containerName": "__CONTAINER_NAME__",
             "pathMap": [
-                ["file:///kohadevbox/koha", "file:///__SYNC_REPO__"]
+                ["file:///kohadevbox/koha", "file://__SYNC_REPO__"]
             ]
         },
         {
@@ -34,7 +34,7 @@
             "containerCmd": "docker",
             "containerName": "__CONTAINER_NAME__",
             "pathMap": [
-                ["file:///kohadevbox/koha", "file:///__SYNC_REPO__"]
+                ["file:///kohadevbox/koha", "file://__SYNC_REPO__"]
             ]
         },
         {
@@ -65,7 +65,7 @@
             "containerCmd": "docker",
             "containerName": "__CONTAINER_NAME__",
             "pathMap": [
-                ["file:///kohadevbox/koha", "file:///__SYNC_REPO__"]
+                ["file:///kohadevbox/koha", "file://__SYNC_REPO__"]
             ]
         }
     ],

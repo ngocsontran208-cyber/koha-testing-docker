@@ -3,7 +3,7 @@
     "perl.containerCmd": "docker",
     "perl.containerName": "__CONTAINER_NAME__",
     "perl.pathMap": [
-        ["file:///kohadevbox/koha", "file:///__SYNC_REPO__"]
+        ["file:///kohadevbox/koha", "file://__SYNC_REPO__"]
     ],
     "perl.perlInc": ["/kohadevbox/koha", "/kohadevbox/koha/lib"]
 }
