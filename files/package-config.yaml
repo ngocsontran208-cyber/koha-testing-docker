@@ -89,6 +89,8 @@ distro_specific:
       netcat-openbsd: netcat
       python3-gdbm: python-gdbm
       plocate: mlocate
+    koha-dev-overrides:
+      libperl-languageserver-perl: null
     cypress-overrides:
       libgtk2.0-0t64: libgtk2.0-0
       libgtk-3-0t64: libgtk-3-0
