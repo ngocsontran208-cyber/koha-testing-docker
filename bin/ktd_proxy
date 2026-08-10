@@ -36,6 +36,7 @@ Options:
     --start               Starts the proxy
     --stop                Yeah
     --status              Prints the proxy status
+    --show-ip             Show the host IP as seen by KTD containers
     --pull                Pull the latest proxy images
     --port                Set the host port for the proxy (default: 80)
     --help|-h             Display this help message
@@ -101,6 +102,9 @@ while [ $# -gt 0 ]; do
         --status)
             OP="status"
             shift ;;
+        --show-ip)
+            OP="show-ip"
+            shift ;;
         --stop)
             OP="stop"
             shift ;;
@@ -144,6 +148,13 @@ if [ -n "$KTD_HOME" ]; then
             "$DOCKER_BINARY" compose -p proxy down
         elif [ "${OP}" = "status" ]; then
             print_status
+        elif [ "${OP}" = "show-ip" ]; then
+            if is_network_present; then
+                ${DOCKER_BINARY} network inspect proxy --format '{{range .IPAM.Config}}{{.Gateway}}{{end}}'
+            else
+                printf "Error: proxy network not found. Start the proxy first.\n" >&2
+                exit 1
+            fi
         elif [ "${OP}" = "pull" ]; then
             "$DOCKER_BINARY" compose -f proxy/proxy.yml pull
         fi
