@@ -30,6 +30,7 @@ services:
             KOHA_IMAGE: ${KOHA_IMAGE:-main}
             KOHA_MARC_FLAVOUR: ${KOHA_MARC_FLAVOUR:-marc21}
             MANA_URL: ${MANA_URL}
+            USE_EXISTING_DB: ${USE_EXISTING_DB:-yes}
         ulimits:
             nofile:
                 soft: 65536

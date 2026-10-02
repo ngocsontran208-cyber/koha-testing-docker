@@ -19,6 +19,21 @@
 
 set -e
 
+# Auto-detect default environment variables if not set
+if [ -z "$KTD_HOME" ]; then
+    export KTD_HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+fi
+if [ -z "$SYNC_REPO" ]; then
+    if [ -d "$KTD_HOME/../Koha" ]; then
+        export SYNC_REPO="$(cd "$KTD_HOME/../Koha" && pwd)"
+    elif [ -d "$KTD_HOME/../koha" ]; then
+        export SYNC_REPO="$(cd "$KTD_HOME/../koha" && pwd)"
+    fi
+fi
+if [ -z "$LOCAL_USER_ID" ]; then
+    export LOCAL_USER_ID=$(id -u)
+fi
+
 usage()
 {
     local scriptname=$0
@@ -84,7 +99,7 @@ handle_down_command() {
         while read project; do
             if [ -n "$project" ]; then
                 echo "Bringing down project: $project"
-                "$DOCKER_BINARY" compose --project-directory ${KTD_HOME} -p "$project" down
+                "$DOCKER_BINARY" compose --project-directory "${KTD_HOME}" -p "$project" down
                 echo
             fi
         done
@@ -93,7 +108,7 @@ handle_down_command() {
         if docker ps -a --format '{{.Names}}' | grep -q "${instance}-koha-1"; then
             echo "Bringing down project: $instance"
             container_count=$(docker ps -a --format '{{.Names}}' | grep "^${instance}-" | wc -l)
-            "$DOCKER_BINARY" compose --project-directory ${KTD_HOME} -p "$instance" down
+            "$DOCKER_BINARY" compose --project-directory "${KTD_HOME}" -p "$instance" down
         else
             echo "Error: Instance '$instance' not found"
             exit 1
@@ -102,7 +117,7 @@ handle_down_command() {
         # Default behavior - bring down current instance
         echo "Bringing down project: ${PROJECT_NAME}"
         container_count=$(docker ps -a --format '{{.Names}}' | grep "^${PROJECT_NAME}-" | wc -l)
-        "$DOCKER_BINARY" compose --project-directory ${KTD_HOME} -p ${PROJECT_NAME} down
+        "$DOCKER_BINARY" compose --project-directory "${KTD_HOME}" -p ${PROJECT_NAME} down
     fi
 }
 
@@ -195,7 +210,7 @@ ENV_KOHA_SEARCH_ENGINE_IMAGE=$KOHA_SEARCH_ENGINE_IMAGE
 ENV_EXTRA_APT=$EXTRA_APT
 ENV_EXTRA_CPAN=$EXTRA_CPAN
 
-source $KTD_HOME/.env
+source "$KTD_HOME/.env"
 
 # ENV overrides sourced config, only if not empty
 [ "$ENV_DB_IMAGE"          != "" ] &&          DB_IMAGE=$ENV_DB_IMAGE
@@ -661,11 +676,11 @@ else
                 if [ ! -f "${SYNC_REPO}/.vscode/launch.json" ]; then
                     mkdir -p "${SYNC_REPO}/.vscode"
                     sed "s|__CONTAINER_NAME__|${PROJECT_NAME}-koha-1|g; s|__SYNC_REPO__|${SYNC_REPO}|g" \
-                        "${KTD_HOME}/files/templates/vscode_launch.json" > "${SYNC_REPO}/.vscode/launch.json"
+                        ""${KTD_HOME}"/files/templates/vscode_launch.json" > "${SYNC_REPO}/.vscode/launch.json"
                     sed "s|__CONTAINER_NAME__|${PROJECT_NAME}-koha-1|g" \
-                        "${KTD_HOME}/files/templates/vscode_tasks.json" > "${SYNC_REPO}/.vscode/tasks.json"
+                        ""${KTD_HOME}"/files/templates/vscode_tasks.json" > "${SYNC_REPO}/.vscode/tasks.json"
                     sed "s|__CONTAINER_NAME__|${PROJECT_NAME}-koha-1|g; s|__SYNC_REPO__|${SYNC_REPO}|g" \
-                        "${KTD_HOME}/files/templates/vscode_settings.json" > "${SYNC_REPO}/.vscode/settings.json"
+                        ""${KTD_HOME}"/files/templates/vscode_settings.json" > "${SYNC_REPO}/.vscode/settings.json"
                     printf "  [debug] Created %s/.vscode/{launch,tasks,settings}.json\n" "${SYNC_REPO}"
                 elif ! grep -q "\"${PROJECT_NAME}-koha-1\"" "${SYNC_REPO}/.vscode/launch.json"; then
                     printf "\nError: %s/.vscode/launch.json exists but targets a different container.\n" "${SYNC_REPO}"
@@ -696,7 +711,7 @@ else
                 COMPOSE_OPTIONS="${COMPOSE_OPTIONS} -f compose/local_db.yml"
             fi
             # worktree? need to jump to the koha clone
-            cd ${SYNC_REPO}
+            cd "${SYNC_REPO}"
             if [ "$(git rev-parse --git-dir)" != ".git" ]; then
                 GIT_WORKTREE_SOURCE=$(git rev-parse --git-common-dir)
                 export GIT_WORKTREE_SOURCE="${GIT_WORKTREE_SOURCE%%/.git*}"
@@ -704,7 +719,7 @@ else
                 COMPOSE_OPTIONS="${COMPOSE_OPTIONS} -f compose/worktree.yml"
             fi
             # back to KTD clone
-            cd ${KTD_HOME}
+            cd "${KTD_HOME}"
 
             if [ "$ENABLE_LOCAL_RUN_SCRIPT" != "no" ]; then
                 COMPOSE_OPTIONS="${COMPOSE_OPTIONS} -f compose/localrun.yml"
@@ -720,9 +735,9 @@ else
             export KOHA_INSTANCE=${PROJECT_NAME}
 
             if [ "$1" = "down" ]; then
-                "$DOCKER_BINARY" compose --project-directory ${KTD_HOME} -p ${PROJECT_NAME} down
+                "$DOCKER_BINARY" compose --project-directory "${KTD_HOME}" -p ${PROJECT_NAME} down
             else
-                "$DOCKER_BINARY" compose --project-directory ${KTD_HOME} ${COMPOSE_OPTIONS} $@
+                "$DOCKER_BINARY" compose --project-directory "${KTD_HOME}" ${COMPOSE_OPTIONS} $@
             fi
 
             # back to the original working directory

@@ -165,7 +165,9 @@ fi
 chmod +x ${BUILD_DIR}/bin/*
 
 cd ${BUILD_DIR}
+set +e
 koha-create --request-db ${KOHA_INSTANCE} --memcached-servers memcached:11211
+set -e
 
 envsubst "$VARS_TO_SUB" < ${BUILD_DIR}/templates/vimrc > /var/lib/koha/${KOHA_INSTANCE}/.vimrc
 chown "${KOHA_INSTANCE}-koha" "/var/lib/koha/${KOHA_INSTANCE}/.vimrc"
