@@ -311,8 +311,8 @@ cd ${BUILD_DIR}/gitify
 ./koha-gitify ${KOHA_INSTANCE} "/kohadevbox/koha"
 cd ${BUILD_DIR}
 
-koha-enable ${KOHA_INSTANCE} 
-a2ensite ${KOHA_INSTANCE}.conf
+koha-enable ${KOHA_INSTANCE} || true
+a2ensite ${KOHA_INSTANCE}.conf || true
 
 cp /kohadevbox/koha/package.json /kohadevbox
 cp /kohadevbox/koha/yarn.lock    /kohadevbox
@@ -386,26 +386,32 @@ if [ "${ENABLE_PLUGINS}" = "yes" ]; then
     echo "    [*] Plugins loaded!"
 fi
 
+# Clean up stale pid files from previous runs
+rm -f /var/run/koha/*/*.pid /var/run/apache2/*.pid 2>/dev/null || true
+
 # Enable and start koha-plack and koha-z3950-responder
-koha-plack           --enable ${KOHA_INSTANCE}
-koha-z3950-responder --enable ${KOHA_INSTANCE}
-service koha-common start
+koha-plack           --enable ${KOHA_INSTANCE} || true
+koha-z3950-responder --enable ${KOHA_INSTANCE} || true
+service koha-common start || service koha-common restart || true
+
+# Inject ScriptAlias /cgi-bin/ftu/ cho OPAC và Intranet (persistent across restart)
+KOHA_SITE_CONF="/etc/apache2/sites-enabled/${KOHA_INSTANCE}.conf"
+if [ -f "$KOHA_SITE_CONF" ] && ! grep -q 'cgi-bin/ftu' "$KOHA_SITE_CONF"; then
+  # OPAC: thêm alias trỏ đến thư mục opac/
+  sed -i '/ScriptAlias \/cgi-bin\/koha\/ "\/kohadevbox\/koha\/opac\/"/a\   ScriptAlias /cgi-bin/ftu/ "/kohadevbox/koha/opac/"' "$KOHA_SITE_CONF"
+  # Intranet: thêm alias trỏ đến thư mục gốc koha/
+  sed -i '0,/ScriptAlias \/cgi-bin\/koha\/ "\/kohadevbox\/koha\/"/!{/ScriptAlias \/cgi-bin\/koha\/ "\/kohadevbox\/koha\/"/a\   ScriptAlias /cgi-bin/ftu/ "/kohadevbox/koha/"
+  }' "$KOHA_SITE_CONF"
+  echo "    [*] Đã thêm ScriptAlias /cgi-bin/ftu/ cho OPAC & Intranet"
+fi
 
 # Start apache and rabbitmq-server
-service apache2 start
+service apache2 start || service apache2 restart || true
 service rabbitmq-server start || true # Don't crash if rabbitmq-server didn't start
 
 touch /ktd_ready
 echo "koha-testing-docker has started up and is ready to be enjoyed!"
 
-# start koha-reload-starman, if we have inotify installed
-#    if [ -f "/usr/bin/inotifywait" ]; then
-#        daemon  --verbose=1 \
-#            --name=reload-starman \
-#            --respawn \
-#            --delay=15 \
-#            --pidfiles=/var/run/koha/kohadev/ -- /kohadevbox/koha-reload-starman
-#    fi
+# Main container keep-alive loop
+exec /bin/bash -c "trap : TERM INT; tail -f /dev/null & wait \$!"
 
-# TODO: We could use supervise as the main loop
-/bin/bash -c "trap : TERM INT; sleep infinity & wait"
