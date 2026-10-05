@@ -392,14 +392,17 @@ service koha-common start
 service apache2 start || service apache2 restart || true
 service rabbitmq-server start || true # Don't crash if rabbitmq-server didn't start
 
-# Tự động nạp cấu trúc MARC21 tiếng Việt nếu phát hiện CSDL chưa được Việt hóa
-if koha-mysql ${KOHA_INSTANCE} -N -e "SELECT count(1) FROM marc_tag_structure WHERE frameworkcode='' AND liblibrarian='CATALOGING SOURCE';" 2>/dev/null | grep -q '1'; then
-    echo "    [*] Phát hiện MARC21 tiếng Anh, đang tự động nạp cấu trúc MARC21 tiếng Việt..."
-    if [ -f "${BUILD_DIR}/koha/scripts/apply_vietnamese_marc.sql" ]; then
-        koha-mysql ${KOHA_INSTANCE} < "${BUILD_DIR}/koha/scripts/apply_vietnamese_marc.sql" 2>/dev/null || true
-        echo "    [*] Đã nạp thành công toàn bộ cấu trúc MARC21 tiếng Việt!"
-    fi
+# Tự động nạp cấu trúc MARC21 tiếng Việt và xóa sạch cache Memcached
+if [ -f "${BUILD_DIR}/koha/scripts/apply_vietnamese_marc.sql" ]; then
+    echo "    [*] Đang đảm bảo cấu trúc MARC21 tiếng Việt được áp dụng vào CSDL..."
+    koha-mysql ${KOHA_INSTANCE} < "${BUILD_DIR}/koha/scripts/apply_vietnamese_marc.sql" 2>/dev/null || true
+    echo "    [*] Đã nạp thành công toàn bộ cấu trúc MARC21 tiếng Việt!"
 fi
+
+echo "    [*] Đang xóa sạch cache Memcached và nạp lại Plack..."
+bash ${BUILD_DIR}/bin/flush_memcached 2>/dev/null || true
+koha-plack --reload ${KOHA_INSTANCE} 2>/dev/null || true
+
 
 touch /ktd_ready
 echo "koha-testing-docker has started up and is ready to be enjoyed!"
