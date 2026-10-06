@@ -39,9 +39,11 @@ services:
                 aliases:
                     - "${KOHA_INTRANET_PREFIX}${KOHA_INSTANCE}${KOHA_INTRANET_SUFFIX}${KOHA_DOMAIN}"
                     - "${KOHA_OPAC_PREFIX}${KOHA_INSTANCE}${KOHA_OPAC_SUFFIX}${KOHA_DOMAIN}"
+        restart: unless-stopped
     memcached:
         image: ${MEMCACHED_IMAGE:-memcached}
         command: memcached -m 64m
+        restart: unless-stopped
         networks:
             - kohanet
 

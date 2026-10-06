@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set +e
 
 export BUILD_DIR=/kohadevbox
 export TEMP=/tmp
@@ -238,7 +238,7 @@ if [[ ${SKIP_L10N} != "yes" ]]; then
             git -C $BUILD_DIR/koha/misc/translator/po checkout -B ${l10n_branch} origin/${l10n_branch}"
     fi
 
-    set -e
+    # set -e
 else
     echo "[koha-l10n] Skipping"
 fi
@@ -251,7 +251,7 @@ sed -i 's/log4perl.logger.api = WARN, API/log4perl.logger.api = TRACE, API/' /et
 echo "[git] Setting up Git on the instance user"
 echo "    [*] Generating /var/lib/koha/${KOHA_INSTANCE}/.gitconfig"
 sudo koha-shell ${KOHA_INSTANCE} -c "\
-    cp ${BUILD_DIR}/templates/gitconfig /var/lib/koha/${KOHA_INSTANCE}/.gitconfig"
+    cp ${BUILD_DIR}/templates/gitconfig /var/lib/koha/${KOHA_INSTANCE}/.gitconfig" || true
 
 echo "    [*] General setup"
 sudo koha-shell ${KOHA_INSTANCE} -c "\
@@ -266,7 +266,7 @@ sudo koha-shell ${KOHA_INSTANCE} -c "\
     git config --global core.whitespace trailing-space,space-before-tab ; \
     git config --global apply.whitespace fix ; \
     git config --global bz-tracker.bugs.koha-community.org.bz-user     \"${GIT_BZ_USER}\" ; \
-    git config --global bz-tracker.bugs.koha-community.org.bz-password \"${GIT_BZ_PASSWORD}\" "
+    git config --global bz-tracker.bugs.koha-community.org.bz-password \"${GIT_BZ_PASSWORD}\" " || true
 
 GIT_BASE_DIR=${BUILD_DIR}/koha
 if [ "${GIT_WORKTREE_SOURCE}" != "" ]; then
@@ -275,30 +275,25 @@ if [ "${GIT_WORKTREE_SOURCE}" != "" ]; then
     GIT_BASE_DIR=${GIT_WORKTREE_SOURCE}
     sudo koha-shell ${KOHA_INSTANCE} -c "\
         cd ${BUILD_DIR}/koha ; \
-        git config --global --add safe.directory ${GIT_WORKTREE_SOURCE}"
+        git config --global --add safe.directory ${GIT_WORKTREE_SOURCE}" || true
     echo "    [*] Added '${GIT_WORKTREE_SOURCE}' to safe directories"
 fi
 
 if [ "${GIT_WORKTREE_SOURCE}" != "" ]; then
     echo "    [*] Installing and setting hooks for worktree (${GIT_BASE_DIR})"
-    # In a worktree the working tree's '.git' is a file, our hooksPath ( which
-    # is relative to the actual kohaclone ) fails silently.
-    # KTD mounts the main clone at the same absolute path inside the container,
-    # so an absolute hooksPath into the shared hooks dir resolves both on the host
-    # and in the container.
     sudo koha-shell ${KOHA_INSTANCE} -c "\
         mkdir -p ${GIT_BASE_DIR}/.git/hooks/ktd ; \
         cp ${BUILD_DIR}/git_hooks/* ${GIT_BASE_DIR}/.git/hooks/ktd ; \
         cd ${BUILD_DIR}/koha ; \
         git config extensions.worktreeConfig true ; \
-        git config --worktree core.hooksPath ${GIT_BASE_DIR}/.git/hooks/ktd"
+        git config --worktree core.hooksPath ${GIT_BASE_DIR}/.git/hooks/ktd" || true
 else
     echo "    [*] Installing and setting hooks (${GIT_BASE_DIR})"
     sudo koha-shell ${KOHA_INSTANCE} -c "\
         mkdir -p ${GIT_BASE_DIR}/.git/hooks/ktd ; \
         cp ${BUILD_DIR}/git_hooks/* ${GIT_BASE_DIR}/.git/hooks/ktd ; \
         cd ${GIT_BASE_DIR} ; \
-        git config --local core.hooksPath .git/hooks/ktd"
+        git config --local core.hooksPath .git/hooks/ktd" || true
 fi
 
 # This needs to be done ONCE koha-create has run (i.e. kohadev-koha user exists)
@@ -306,11 +301,14 @@ envsubst "$VARS_TO_SUB" < ${BUILD_DIR}/templates/apache2_envvars > /etc/apache2/
 
 # gitify instance
 cd ${BUILD_DIR}/gitify
-./koha-gitify ${KOHA_INSTANCE} "/kohadevbox/koha"
+./koha-gitify ${KOHA_INSTANCE} "/kohadevbox/koha" || true
 cd ${BUILD_DIR}
 
-koha-enable ${KOHA_INSTANCE} 
-a2ensite ${KOHA_INSTANCE}.conf
+if [ -f /etc/apache2/sites-enabled/${KOHA_INSTANCE}.conf ] && [ ! -L /etc/apache2/sites-enabled/${KOHA_INSTANCE}.conf ]; then
+    rm -f /etc/apache2/sites-enabled/${KOHA_INSTANCE}.conf
+fi
+koha-enable ${KOHA_INSTANCE} || true
+a2ensite ${KOHA_INSTANCE}.conf || true
 
 cp /kohadevbox/koha/package.json /kohadevbox
 cp /kohadevbox/koha/yarn.lock    /kohadevbox
